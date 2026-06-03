@@ -1,0 +1,118 @@
+// Sample OpenClaw config. Copy to your state dir as openclaw.json (the gateway
+// reads JSON5, so these comments are fine). For Docker, that path is mounted at
+// /home/node/.openclaw/openclaw.json via ./state/openclaw.
+//
+// Model lineup (Azure, resource group openclaw-rg, swedencentral):
+//   azure-oai/gpt-5-mini  default chat + xlsx/db agent + pptx agent (vision-capable)
+//   azure-oai/o4-mini     reasoning escalation for hard analytics
+// OCR (mistral-document-ai-2512) is NOT here: it is a dedicated Foundry OCR API
+// (POST {AZURE_AI_FOUNDRY_ENDPOINT}providers/mistral/azure/ocr), not a chat model,
+// so it cannot be an OpenClaw chat provider. It is called out of band; see
+// scripts/ocr_test/run_ocr_test.py and AZURE-HANDOFF.md.
+{
+  // Single-host Docker deploy: onboarding is never run interactively inside the
+  // container, so set the mode explicitly. Without gateway.mode the gateway
+  // refuses to start ("config is missing gateway.mode").
+  "gateway": { "mode": "local" },
+
+  // Default agent model. Format is <provider-id>/<deployment-name>.
+  "agents": {
+    "defaults": {
+      "model": { "primary": "azure-oai/gpt-5-mini" },
+
+      // Per-model request tuning. gpt-5-mini and o4-mini are reasoning-family and
+      // reject the classic chat params, so:
+      //   - reasoning:true on the model entry (below) makes OpenClaw emit the
+      //     reasoning-model wire format: max_completion_tokens (not max_tokens),
+      //     and it omits temperature/top_p/penalties.
+      //   - reasoningEffort tunes cost vs depth (reasoning tokens bill at output rate).
+      //   - parallel_tool_calls:false because the agents pair tools with a
+      //     json_schema response_format, which cannot combine with parallel calls.
+      // Verified live against the gpt-5-mini deployment 2026-06-04: max_tokens -> 400
+      // ("use max_completion_tokens"), reasoning_effort:"low" accepted, Bearer auth OK.
+      "models": {
+        "azure-oai/gpt-5-mini": {
+          "params": {
+            "reasoningEffort": "low",
+            "parallel_tool_calls": false
+          }
+        },
+        "azure-oai/o4-mini": {
+          "params": {
+            "reasoningEffort": "high",
+            "parallel_tool_calls": false
+          }
+        }
+      }
+    }
+  },
+
+  // LLM provider: OpenClaw's built-in OpenAI-compatible client pointed at Azure
+  // OpenAI's v1 endpoint with a static key (Path B). baseUrl and key come from .env
+  // via ${...} interpolation. Each model `id` MUST match the Azure deployment name.
+  "models": {
+    "mode": "merge",
+    "providers": {
+      "azure-oai": {
+        "baseUrl": "${AZURE_OPENAI_BASE_URL}",
+        "apiKey": "${AZURE_OPENAI_API_KEY}",
+        "api": "openai-completions",
+        "models": [
+          {
+            "id": "gpt-5-mini",
+            "name": "GPT-5 mini (Azure)",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 400000,
+            "maxTokens": 128000
+          },
+          {
+            "id": "o4-mini",
+            "name": "o4-mini (Azure, reasoning escalation)",
+            "reasoning": true,
+            "input": ["text", "image"],
+            "contextWindow": 200000,
+            "maxTokens": 100000
+          }
+        ]
+      }
+    }
+  },
+
+  // Telegram channel. enabled:true turns it on; the bot token is read from the
+  // TELEGRAM_BOT_TOKEN env var (env-backed, so no secret is written into config).
+  "channels": {
+    "telegram": { "enabled": true }
+  },
+
+  // Cost-ledger MCP server.
+  "mcp": {
+    "servers": {
+      // Production: the sidecar container, reached over the internal network.
+      "cost-ledger": {
+        "url": "http://cost-ledger-mcp:8000/mcp",
+        "transport": "streamable-http"
+      }
+      // Local/demo alternative (OpenClaw and Python on the same host):
+      // "cost-ledger": {
+      //   "command": "python",
+      //   "args": ["-m", "cost_ledger_mcp.server"],
+      //   "transport": "stdio"
+      // }
+    }
+  },
+
+  // Disable the dreaming pipeline: it writes junk into MEMORY.md (upstream #89444).
+  "plugins": {
+    "entries": {
+      "memory-core": { "config": { "dreaming": { "enabled": false } } }
+    }
+  },
+
+  // Stay on pinned stable. No surprise upgrades on a client box.
+  "update": {
+    "channel": "stable",
+    "auto": { "enabled": false },
+    "checkOnStart": false
+  }
+}

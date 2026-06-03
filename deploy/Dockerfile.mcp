@@ -1,0 +1,21 @@
+# Cost-ledger MCP server, built as a standalone sidecar that serves the three
+# tools over streamable-http. Kept separate from the OpenClaw gateway image so
+# each upgrades independently (the gateway stays on the stock pinned image).
+# See openclaw/DEPLOYMENT.md.
+
+FROM python:3.12-slim
+
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY cost_ledger_mcp ./cost_ledger_mcp
+
+ENV MCP_TRANSPORT=streamable-http \
+    MCP_HTTP_HOST=0.0.0.0 \
+    MCP_HTTP_PORT=8000
+
+EXPOSE 8000
+
+CMD ["python", "-m", "cost_ledger_mcp.server"]

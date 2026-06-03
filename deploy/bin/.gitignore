@@ -1,0 +1,3 @@
+# The static binaries are fetched by fetch-static-bins.sh, not committed.
+jq
+rg

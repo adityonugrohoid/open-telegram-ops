@@ -1,0 +1,63 @@
+# 24/7 deployment: OpenClaw gateway (stock pinned image) + cost-ledger MCP sidecar.
+# The gateway connects to the sidecar by URL (http://cost-ledger-mcp:8000/mcp),
+# configured in openclaw.json. The sidecar has no published host port; it is only
+# reachable on the internal network. See openclaw/DEPLOYMENT.md for the full runbook.
+
+services:
+  openclaw-gateway:
+    image: ${OPENCLAW_IMAGE:-ghcr.io/openclaw/openclaw:2026.5.28}
+    restart: unless-stopped
+    init: true
+    environment:
+      HOME: /home/node
+      OPENCLAW_STATE_DIR: /home/node/.openclaw
+      OPENCLAW_CONFIG_PATH: /home/node/.openclaw/openclaw.json
+      OPENCLAW_GATEWAY_TOKEN: "${OPENCLAW_GATEWAY_TOKEN:?generate with openssl rand -hex 32}"
+      TELEGRAM_BOT_TOKEN: "${TELEGRAM_BOT_TOKEN:?set in .env}"
+      # Azure OpenAI via the built-in openai-compatible provider (see openclaw.json).
+      AZURE_OPENAI_API_KEY: "${AZURE_OPENAI_API_KEY:?set in .env}"
+      AZURE_OPENAI_BASE_URL: "${AZURE_OPENAI_BASE_URL:?set in .env}"
+    volumes:
+      - ./state/openclaw:/home/node/.openclaw
+      - ./state/openclaw-auth:/home/node/.config/openclaw
+      # Official static binaries for the `session-logs` skill (jq + ripgrep),
+      # mounted read-only into PATH so the skill is eligible without a custom
+      # gateway image. Populate with deploy/bin/fetch-static-bins.sh before
+      # `compose up` (the source files must exist or Docker creates empty dirs).
+      - ./deploy/bin/jq:/usr/local/bin/jq:ro
+      - ./deploy/bin/rg:/usr/local/bin/rg:ro
+    ports:
+      # Loopback only. Reach the gateway via Tailscale or an SSH tunnel; never
+      # expose 18789 to the public internet.
+      - "127.0.0.1:${OPENCLAW_GATEWAY_PORT:-18789}:18789"
+    cap_drop: [NET_RAW, NET_ADMIN]
+    security_opt: ["no-new-privileges:true"]
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:18789/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    depends_on:
+      cost-ledger-mcp:
+        condition: service_started
+    networks: [opsnet]
+
+  cost-ledger-mcp:
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile.mcp
+    restart: unless-stopped
+    environment:
+      MCP_TRANSPORT: streamable-http
+      MCP_HTTP_HOST: 0.0.0.0
+      MCP_HTTP_PORT: "8000"
+      COST_LEDGER_DB_PATH: /data/cost_ledger.db
+      PROJECT_NAME: "${PROJECT_NAME:?set in .env}"
+    volumes:
+      - ./state/ledger:/data
+    networks: [opsnet]
+
+networks:
+  opsnet:
+    driver: bridge

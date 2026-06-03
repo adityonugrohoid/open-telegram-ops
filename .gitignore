@@ -1,0 +1,38 @@
+# Secrets and config
+.env
+*.pem
+*.key
+service-account*.json
+adc*.json
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# Runtime artifacts (cost ledger DB, uploaded receipts, generated charts)
+data/*
+!data/.gitkeep
+
+# OCR test client data (real receipts + ground truth)
+scripts/ocr_test/receipts/
+scripts/ocr_test/ground_truth.json
+
+# OpenClaw self-hosted state (never commit a client's transcripts/memory)
+openclaw/state/
+openclaw/.openclaw/
+*.jsonl
+
+# Deployment runtime state and mounted secrets (compose bind mounts)
+state/
+secrets/
+
+# OS / editor
+.DS_Store
+*.swp
+.idea/
+.vscode/
