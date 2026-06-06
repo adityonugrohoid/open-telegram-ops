@@ -76,7 +76,7 @@ graph TD
     LLM -->|parsed expense| OC
     OC -->|confirm parse + budget line| W
 
-    OC -->|"MCP (stdio demo / http prod)"| MCP["cost_ledger_mcp<br/><i>log_expense / query_spend / budget_status</i>"]
+    OC -->|"MCP (stdio demo / http prod)"| MCP["cost_ledger_mcp<br/><i>set_budget / log_expense<br/>query_spend / budget_status / budget_chart</i>"]
     MCP --> DB[("SQLite<br/>expenses + budget_lines")]
     MCP --> CHART["reports.py<br/><i>matplotlib PNG</i>"]
     CHART -->|chart image| OC
@@ -148,13 +148,15 @@ The agent flow, end to end:
 
 ### MCP tool contract
 
-The runtime calls three tools on the cost-ledger MCP server:
+The runtime calls these tools on the cost-ledger MCP server:
 
 | Tool | Purpose |
 |------|---------|
-| `log_expense` | Write a confirmed expense (amount, vendor, date, category, budget line, submitter) |
+| `set_budget` | Create or update a budget line allocation (a manager action; defines the chart of accounts) |
+| `log_expense` | Write a confirmed expense (amount, vendor, date, category, budget line, submitter); rejects an undefined budget line |
 | `query_spend` | Return spend for a period, broken down by budget line and by submitter |
 | `budget_status` | Return budget-vs-actual per budget line for the active project |
+| `budget_chart` | Render the budget-vs-actual chart as a PNG for in-chat viewing |
 
 ### Confirm before commit
 
