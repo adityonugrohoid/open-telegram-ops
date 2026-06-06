@@ -89,14 +89,14 @@
   "mcp": {
     "servers": {
       // Production: the sidecar container, reached over the internal network.
-      "cost-ledger": {
-        "url": "http://cost-ledger-mcp:8000/mcp",
+      "delivery-ops": {
+        "url": "http://delivery-ops-mcp:8000/mcp",
         "transport": "streamable-http"
       }
       // Local/demo alternative (OpenClaw and Python on the same host):
-      // "cost-ledger": {
+      // "delivery-ops": {
       //   "command": "python",
-      //   "args": ["-m", "cost_ledger_mcp.server"],
+      //   "args": ["-m", "delivery_ops_mcp.server"],
       //   "transport": "stdio"
       // }
     }

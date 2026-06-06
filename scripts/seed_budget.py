@@ -5,7 +5,7 @@ line for PROJECT_NAME into COST_LEDGER_DB_PATH. Idempotent: re-running updates
 allocations in place. Run this before the bot logs any expense, since log_expense
 rejects spend against an undefined budget line.
 
-Usage (run as a module from the repo root so cost_ledger_mcp is importable):
+Usage (run as a module from the repo root so delivery_ops_mcp is importable):
     COST_LEDGER_DB_PATH=data/cost_ledger.db PROJECT_NAME=pilot \\
         python -m scripts.seed_budget scripts/budget_lines.json
 """
@@ -21,7 +21,7 @@ from pathlib import Path
 
 from dotenv import load_dotenv
 
-from cost_ledger_mcp import ledger
+from delivery_ops_mcp import ledger
 
 load_dotenv()
 

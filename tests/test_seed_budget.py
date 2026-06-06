@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 import pytest_asyncio
 
-from cost_ledger_mcp import ledger
+from delivery_ops_mcp import ledger
 from scripts import seed_budget
 
 

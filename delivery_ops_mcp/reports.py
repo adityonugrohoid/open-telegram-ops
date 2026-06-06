@@ -84,7 +84,7 @@ def write_chart_png(png: bytes, output_dir: str, project: str) -> Path:
     """Write chart PNG bytes to output_dir and return the path.
 
     The file is named per project (stable, so it is overwritten each render) and
-    made world-readable: the cost-ledger sidecar writes it as root, but the
+    made world-readable: the delivery-ops sidecar writes it as root, but the
     OpenClaw gateway reads it as a non-root user to send it as a Telegram photo,
     so both containers must share output_dir as a volume.
     """
@@ -103,7 +103,7 @@ def write_ledger_csv(rows: list[dict[str, object]], output_dir: str, project: st
     Columns are fixed (EXPENSE_CSV_COLUMNS), so the export header is stable for
     audit regardless of row content; an empty input writes a header-only file. The
     file is named per project (stable, so it is overwritten each export) and made
-    world-readable: the cost-ledger sidecar writes it as root, but the OpenClaw
+    world-readable: the delivery-ops sidecar writes it as root, but the OpenClaw
     gateway reads it as a non-root user to send it as a Telegram document, so both
     containers must share output_dir as a volume.
     """

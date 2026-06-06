@@ -3,7 +3,7 @@
 Always-on deployment on a persistent Azure Linux VM, with the LLM served by Azure
 OpenAI through OpenClaw's built-in OpenAI-compatible provider. The runtime, the
 hardening, and the model all sit on one vendor and one credit (the Azure startup
-sponsorship). The OpenClaw gateway runs from a pinned image; the cost-ledger MCP
+sponsorship). The OpenClaw gateway runs from a pinned image; the delivery-ops MCP
 server runs as a separate sidecar container that the gateway reaches over HTTP.
 
 Verified against Azure docs, docs.openclaw.ai, and the OpenClaw repo on 2026-06-04.
@@ -35,9 +35,9 @@ workload, so this is a single-vendor deployment with no second-cloud fallback.
 ## Why a sidecar (the one architecture decision that matters)
 
 A stdio MCP server runs as a child process *inside* the OpenClaw gateway container.
-That means a stdio cost-ledger would have to be baked into a custom gateway image and
+That means a stdio delivery-ops would have to be baked into a custom gateway image and
 rebuilt on every ledger change, and it would couple our upgrades to OpenClaw's weekly
-releases. Instead we run the cost-ledger MCP server as its own container over
+releases. Instead we run the delivery-ops MCP server as its own container over
 `streamable-http` and point OpenClaw at it by URL. The gateway stays on a stock
 pinned image, and the ledger upgrades on its own schedule. The ledger is also
 model-agnostic: switching the LLM between Azure OpenAI models (or off Azure entirely)
@@ -52,8 +52,8 @@ host (Azure Linux VM, Docker)
 │                       LLM via Azure OpenAI v1 endpoint over HTTPS,
 │                       static key from .env (built-in openai-compatible provider)
 │                       port 18789 published on loopback only
-│                       --MCP over http--> cost-ledger-mcp:8000/mcp
-└── cost-ledger-mcp    our image (deploy/Dockerfile.mcp)
+│                       --MCP over http--> delivery-ops-mcp:8000/mcp
+└── delivery-ops-mcp    our image (deploy/Dockerfile.mcp)
                         streamable-http on :8000, internal network only
                         SQLite at /data (persisted volume)
 ```
@@ -69,7 +69,7 @@ host (Azure Linux VM, Docker)
   (`POST {AZURE_AI_FOUNDRY_ENDPOINT}providers/mistral/azure/ocr`, Bearer auth), NOT a
   chat model, so it is not an OpenClaw provider. It stays provisioned only as a fallback
   for the OCR gate if `gpt-5-mini` underperforms on Indonesian thermal and handwritten
-  receipts; wire it out of band (a cost-ledger MCP tool or the standalone harness),
+  receipts; wire it out of band (a delivery-ops MCP tool or the standalone harness),
   never as a chat provider.
 - Reasoning-family wire format: `gpt-5-mini` and `o4-mini` need `max_completion_tokens`
   (not `max_tokens`) and reject `temperature` / `top_p`. The sample config sets
@@ -126,7 +126,7 @@ branch, or a committed file):
 | Azure OpenAI resource key | `.env` `AZURE_OPENAI_API_KEY` |
 | VM public IP + SSH access | the deploy target below |
 
-## Deploy OpenClaw + the cost-ledger sidecar on the VM
+## Deploy OpenClaw + the delivery-ops sidecar on the VM
 
 With the handoff above in hand, SSH to the VM (`ssh azureuser@<vm-public-ip>`), then:
 
@@ -177,7 +177,7 @@ With the handoff above in hand, SSH to the VM (`ssh azureuser@<vm-public-ip>`), 
    docker compose logs -f openclaw-gateway   # watch it connect to the MCP server
    ```
 
-   Message the bot on Telegram and confirm the cost-ledger tools respond.
+   Message the bot on Telegram and confirm the delivery-ops tools respond.
 
 6. Apply the guardrails from `openclaw/README.md` (pin the version, dreaming off, no
    third-party skills beyond first-party `@openclaw/*` diagnostics, synchronous flows).
@@ -231,7 +231,7 @@ does not need a public HTTPS endpoint for the bot to work.
 `update.auto.enabled` is false and `checkOnStart` is false in the sample config. To
 upgrade: bump `OPENCLAW_IMAGE` to the new pinned tag in `.env`, test in a staging
 copy, then `docker compose up -d`. The ledger sidecar upgrades independently with
-`docker compose up -d --build cost-ledger-mcp`.
+`docker compose up -d --build delivery-ops-mcp`.
 
 ### Health and observability
 
@@ -290,7 +290,7 @@ runway to burn:
 
 ## Gotcha
 
-- If you point OpenClaw at a stdio cost-ledger using a stock gateway image, it will
+- If you point OpenClaw at a stdio delivery-ops using a stock gateway image, it will
   fail to start the MCP server: the stock image does not contain our Python package.
   Either use the sidecar (streamable-http) or build a custom gateway image with the
   package baked in. The sidecar is the supported path here.

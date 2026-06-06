@@ -9,4 +9,4 @@
 
 ## Context
 
-Pilot: conversational job-costing for a telecom subcontractor. Field workers submit receipts; managers track budget vs actual. Savannah's current capability is the cost-ledger MCP tools (log_expense, query_spend, budget_status).
+Pilot: conversational job-costing for a telecom subcontractor. Field workers submit receipts; managers track budget vs actual. Savannah's current capability is the delivery-ops MCP tools (log_expense, query_spend, budget_status).

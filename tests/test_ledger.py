@@ -13,7 +13,7 @@ import aiosqlite
 import pytest
 import pytest_asyncio
 
-from cost_ledger_mcp import ledger
+from delivery_ops_mcp import ledger
 
 CREATED_AT = "2026-06-01T00:00:00Z"
 

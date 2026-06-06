@@ -8,7 +8,7 @@ This is the first of several planned internal agents for one client. Demo first,
 
 This repo owns two things:
 
-- `cost_ledger_mcp/` - a custom MCP server that is the durable, swappable domain layer: the SQLite cost ledger, attribution, and reporting. This is the asset. The client's financial data lives here, in our controlled store, never inside OpenClaw's plaintext transcripts. It serves over two transports (one env var, `MCP_TRANSPORT`): stdio for the local demo, streamable-http for the 24/7 sidecar.
+- `delivery_ops_mcp/` - a custom MCP server that is the durable, swappable domain layer: the SQLite cost ledger, attribution, and reporting. This is the asset. The client's financial data lives here, in our controlled store, never inside OpenClaw's plaintext transcripts. It serves over two transports (one env var, `MCP_TRANSPORT`): stdio for the local demo, streamable-http for the 24/7 sidecar.
 - `openclaw/` - config sample and runbooks for the OpenClaw runtime that provides Telegram, conversation memory, and the agent loop. OpenClaw is installed and pinned separately (see `openclaw/INSTALL.md` and `openclaw/DEPLOYMENT.md`); we do not vendor it.
 
 Decoupling is deliberate: if OpenClaw proves too unstable, the runtime is swappable without touching the ledger or the MCP contract.
@@ -16,7 +16,7 @@ Decoupling is deliberate: if OpenClaw proves too unstable, the runtime is swappa
 ## Deployment topology
 
 - **Demo:** OpenClaw on a laptop (npm, pinned) + the MCP server over stdio on the same host. See `openclaw/INSTALL.md`.
-- **24/7:** Docker Compose (`docker-compose.yml`). The OpenClaw gateway runs from the stock pinned image; the cost-ledger MCP server runs as its own sidecar container over streamable-http, reached at `http://cost-ledger-mcp:8000/mcp`. See `openclaw/DEPLOYMENT.md`.
+- **24/7:** Docker Compose (`docker-compose.yml`). The OpenClaw gateway runs from the stock pinned image; the delivery-ops MCP server runs as its own sidecar container over streamable-http, reached at `http://delivery-ops-mcp:8000/mcp`. See `openclaw/DEPLOYMENT.md`.
 
 A stdio MCP server runs *inside* the gateway container, so a stdio ledger would have to be baked into a custom gateway image and rebuilt on every change. The HTTP sidecar avoids that and keeps the ledger upgradeable on its own schedule. Pinned image at verification time: `ghcr.io/openclaw/openclaw:2026.5.28` (re-confirm current stable before pinning; OpenClaw ships weekly).
 
@@ -36,7 +36,7 @@ LLM runs on **Azure OpenAI** via OpenClaw's built-in OpenAI-compatible provider 
 
 ```
 open-telegram-ops/
-├── cost_ledger_mcp/
+├── delivery_ops_mcp/
 │   ├── server.py        # entry point: MCP server (stdio or streamable-http), 5 tools
 │   ├── ledger.py        # SQLite schema + async read/write
 │   └── reports.py       # text summary + matplotlib chart rendering
@@ -46,8 +46,8 @@ open-telegram-ops/
 │   ├── DEPLOYMENT.md    # 24/7 Docker deployment (sidecar topology)
 │   └── openclaw.sample.json  # config to copy into the OpenClaw state dir
 ├── deploy/
-│   └── Dockerfile.mcp   # builds the cost-ledger MCP sidecar image
-├── docker-compose.yml   # gateway (stock image) + cost-ledger-mcp sidecar
+│   └── Dockerfile.mcp   # builds the delivery-ops MCP sidecar image
+├── docker-compose.yml   # gateway (stock image) + delivery-ops-mcp sidecar
 ├── scripts/ocr_test/
 │   ├── run_ocr_test.py  # the mandatory pre-build OCR accuracy harness
 │   └── README.md        # the 10-receipt test protocol and pass/fail thresholds
@@ -64,8 +64,8 @@ The MCP tools (the contract OpenClaw calls): `set_budget`, `log_expense`, `query
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
 
-# Run the cost-ledger MCP server over stdio (OpenClaw launches it this way)
-python -m cost_ledger_mcp.server
+# Run the delivery-ops MCP server over stdio (OpenClaw launches it this way)
+python -m delivery_ops_mcp.server
 
 # Run the mandatory OCR accuracy test (see the gate below)
 python scripts/ocr_test/run_ocr_test.py

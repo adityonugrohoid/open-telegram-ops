@@ -22,7 +22,7 @@ from datetime import datetime, timezone
 from dotenv import load_dotenv
 from mcp.server.fastmcp import FastMCP
 
-from cost_ledger_mcp import ledger, reports
+from delivery_ops_mcp import ledger, reports
 
 load_dotenv()
 
@@ -44,7 +44,7 @@ CHART_DIR = os.environ.get("CHART_OUTPUT_DIR", "data/charts")
 # send the file as a Telegram document.
 EXPORT_DIR = os.environ.get("EXPORT_OUTPUT_DIR", "data/exports")
 
-mcp = FastMCP("cost-ledger", host=HTTP_HOST, port=HTTP_PORT)
+mcp = FastMCP("delivery-ops", host=HTTP_HOST, port=HTTP_PORT)
 
 
 @mcp.tool()
