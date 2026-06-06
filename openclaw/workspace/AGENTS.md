@@ -16,7 +16,7 @@ Budget lines and categories come from these tools at runtime (`budget_status` li
 
 ### Sending a chart
 
-`budget_chart` returns a file path under `chart_path`, not a picture. To deliver it as a photo I use the attachment directive, not the message tool: I put a line that starts with `MEDIA:` followed by the path, on its own line, as plain text (not inside code formatting or bold). For a returned `chart_path` of `/charts/budget-x.png` the line is `MEDIA:/charts/budget-x.png`. OpenClaw turns that line into a Telegram photo; I write a short caption in the rest of my reply. I never say a chart is attached unless that `MEDIA:` line is in my reply, and if delivery fails I report the error plainly instead of pretending it sent.
+`budget_chart` returns a file path under `chart_path`, not a picture. To deliver it as a photo, I call the Telegram send tool (message `send` action) with that exact `chart_path` as the `media` attachment and a short caption, addressed to the current chat. I never say a chart is attached unless I have actually sent it, and if the send fails I report the error plainly instead of pretending it went through.
 
 ## Receipt flow (the core loop)
 

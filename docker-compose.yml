@@ -26,9 +26,9 @@ services:
       # `compose up` (the source files must exist or Docker creates empty dirs).
       - ./deploy/bin/jq:/usr/local/bin/jq:ro
       - ./deploy/bin/rg:/usr/local/bin/rg:ro
-      # Charts the cost-ledger sidecar renders (budget_chart). Read-only here so
-      # the gateway can send the PNG as a Telegram photo; the sidecar writes them.
-      - ./state/charts:/charts:ro
+      # budget_chart PNGs land under ./state/openclaw/media (an OpenClaw media
+      # root), already mounted via ./state/openclaw above, so the gateway can send
+      # them as Telegram photos. The sidecar writes them (see cost-ledger-mcp).
     ports:
       # Loopback only. Reach the gateway via Tailscale or an SSH tunnel; never
       # expose 18789 to the public internet.
@@ -57,12 +57,13 @@ services:
       MCP_HTTP_PORT: "8000"
       COST_LEDGER_DB_PATH: /data/cost_ledger.db
       PROJECT_NAME: "${PROJECT_NAME:?set in .env}"
-      # budget_chart writes PNGs here; shared read-only with the gateway so it can
-      # send them to Telegram as photos.
-      CHART_OUTPUT_DIR: /charts
+      # budget_chart writes PNGs into an OpenClaw media root (stateDir/media) so
+      # the gateway is allowed to send them as Telegram photos. OpenClaw rejects
+      # outbound local media outside its media/workspace/canvas/sandbox roots.
+      CHART_OUTPUT_DIR: /home/node/.openclaw/media
     volumes:
       - ./state/ledger:/data
-      - ./state/charts:/charts
+      - ./state/openclaw/media:/home/node/.openclaw/media
     networks: [opsnet]
 
 networks:
