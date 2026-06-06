@@ -1,12 +1,12 @@
-"""Seed budget lines (the client's chart of accounts) into the cost ledger.
+"""Seed budget lines (the client's chart of accounts) into the delivery-ops ledger.
 
 Reads a JSON array of {"name": str, "allocated_amount": int} and upserts each
-line for PROJECT_NAME into COST_LEDGER_DB_PATH. Idempotent: re-running updates
+line for PROJECT_NAME into DELIVERY_OPS_DB_PATH. Idempotent: re-running updates
 allocations in place. Run this before the bot logs any expense, since log_expense
 rejects spend against an undefined budget line.
 
 Usage (run as a module from the repo root so delivery_ops_mcp is importable):
-    COST_LEDGER_DB_PATH=data/cost_ledger.db PROJECT_NAME=pilot \\
+    DELIVERY_OPS_DB_PATH=data/delivery_ops.db PROJECT_NAME=pilot \\
         python -m scripts.seed_budget scripts/budget_lines.json
 """
 
@@ -49,14 +49,14 @@ async def seed(db_path: str, project: str, lines: list[dict[str, object]]) -> in
 
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Seed budget lines (chart of accounts) into the cost ledger."
+        description="Seed budget lines (chart of accounts) into the delivery-ops ledger."
     )
     parser.add_argument(
         "chart", type=Path, help="JSON file: array of {name, allocated_amount}"
     )
     args = parser.parse_args()
 
-    db_path = os.environ["COST_LEDGER_DB_PATH"]
+    db_path = os.environ["DELIVERY_OPS_DB_PATH"]
     project = os.environ["PROJECT_NAME"]
 
     if not args.chart.is_file():

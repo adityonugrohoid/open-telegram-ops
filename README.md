@@ -41,7 +41,7 @@ A telecom subcontractor runs daily field operations and tracks every cost on phy
 
 ### The solution
 
-Capture happens where the crew already lives. A worker photographs a receipt in Telegram, an agent reads the amount, vendor, and date, attributes it to a budget line, and writes it to a cost ledger. Every entry carries the submitter's identity, so accountability is automatic. Managers query live spend and budget status from the same chat. The capture friction that killed the form is gone.
+Capture happens where the crew already lives. A worker photographs a receipt in Telegram, an agent reads the amount, vendor, and date, attributes it to a budget line, and writes it to a delivery-ops ledger. Every entry carries the submitter's identity, so accountability is automatic. Managers query live spend and budget status from the same chat. The capture friction that killed the form is gone.
 
 ## Features
 
@@ -49,7 +49,7 @@ Capture happens where the crew already lives. A worker photographs a receipt in 
 - **Confirm before commit** - the agent echoes the parsed amount and asks for the budget line via inline buttons, so a bad OCR read is caught before it is recorded.
 - **Per-submitter accountability** - every expense is tagged with the Telegram user who logged it.
 - **Manager visibility** - live budget-vs-actual summaries and on-demand charts, in-chat.
-- **Decoupled cost ledger** - financial data lives in a controlled SQLite store behind a custom MCP server, not inside the agent runtime.
+- **Decoupled delivery-ops ledger** - financial data lives in a controlled SQLite store behind a custom MCP server, not inside the agent runtime.
 
 ## Tech Stack
 
@@ -64,7 +64,7 @@ Capture happens where the crew already lives. A worker photographs a receipt in 
 
 ## Architecture
 
-The agent runtime (OpenClaw) owns the channel, conversation memory, and the LLM loop. The cost ledger is a separate MCP server we own. The runtime is swappable; the ledger and its data are not.
+The agent runtime (OpenClaw) owns the channel, conversation memory, and the LLM loop. The delivery-ops ledger is a separate MCP server we own. The runtime is swappable; the ledger and its data are not.
 
 ```mermaid
 graph TD
@@ -215,7 +215,7 @@ sensitive (chat transcripts hold cost figures); apply OS-level volume encryption
 ## Security
 
 - **Authentication** - manager query commands are gated by a Telegram user-ID allowlist (`MANAGER_TELEGRAM_IDS`).
-- **Data handling** - cost data lives in the cost-ledger SQLite store we own, not in the agent runtime's transcripts. Internal workflow only; no sensitive personal data. Secrets stay in `.env` (gitignored); the OpenClaw state dir is never committed.
+- **Data handling** - cost data lives in the delivery-ops SQLite store we own, not in the agent runtime's transcripts. Internal workflow only; no sensitive personal data. Secrets stay in `.env` (gitignored); the OpenClaw state dir is never committed.
 - **Supply chain** - no third-party ClawHub skills. Own code only.
 
 To report a vulnerability, contact the maintainer directly.

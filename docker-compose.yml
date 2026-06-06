@@ -55,7 +55,7 @@ services:
       MCP_TRANSPORT: streamable-http
       MCP_HTTP_HOST: 0.0.0.0
       MCP_HTTP_PORT: "8000"
-      COST_LEDGER_DB_PATH: /data/cost_ledger.db
+      DELIVERY_OPS_DB_PATH: /data/delivery_ops.db
       PROJECT_NAME: "${PROJECT_NAME:?set in .env}"
       # budget_chart and export_ledger write their artifacts into an OpenClaw media
       # root (stateDir/media) so the gateway is allowed to send them as Telegram

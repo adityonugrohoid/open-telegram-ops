@@ -1,4 +1,4 @@
-"""SQLite cost ledger: schema and async read/write.
+"""SQLite delivery-ops ledger: schema and async read/write.
 
 Amounts are stored as integer rupiah (IDR has no sub-unit in practice). All I/O
 is async via aiosqlite. Functions raise on misuse rather than failing silently.

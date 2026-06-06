@@ -85,7 +85,7 @@
     "telegram": { "enabled": true }
   },
 
-  // Cost-ledger MCP server.
+  // Delivery-ops MCP server.
   "mcp": {
     "servers": {
       // Production: the sidecar container, reached over the internal network.

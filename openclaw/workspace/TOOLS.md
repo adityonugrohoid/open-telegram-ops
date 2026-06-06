@@ -2,7 +2,7 @@
 
 Environment specifics for Savannah. Config and skills define which tools exist; this file is just notes.
 
-## Cost ledger (MCP server: delivery-ops)
+## Ledger (MCP server: delivery-ops)
 
 - Reached at `http://delivery-ops-mcp:8000/mcp` (streamable-http sidecar).
 - Tools: `log_expense`, `query_spend`, `budget_status`.

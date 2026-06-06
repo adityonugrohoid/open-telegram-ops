@@ -14,7 +14,7 @@ __pycache__/
 .mypy_cache/
 .ruff_cache/
 
-# Runtime artifacts (cost ledger DB, uploaded receipts, generated charts)
+# Runtime artifacts (delivery-ops ledger DB, uploaded receipts, generated charts)
 data/*
 !data/.gitkeep
 

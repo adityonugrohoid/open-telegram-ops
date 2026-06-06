@@ -48,7 +48,7 @@ pip install -r requirements.txt
 Confirm it runs over stdio:
 
 ```bash
-COST_LEDGER_DB_PATH=data/cost_ledger.db PROJECT_NAME=demo python -m delivery_ops_mcp.server
+DELIVERY_OPS_DB_PATH=data/delivery_ops.db PROJECT_NAME=demo python -m delivery_ops_mcp.server
 ```
 
 (It will wait on stdio; Ctrl-C to stop. OpenClaw will launch it the same way.)
@@ -75,7 +75,7 @@ Set the env the gateway needs (the `azure-oai` provider reads the two Azure vars
 export TELEGRAM_BOT_TOKEN=...        # from @BotFather
 export AZURE_OPENAI_API_KEY=...      # Azure OpenAI resource key
 export AZURE_OPENAI_BASE_URL=https://YOUR-RESOURCE-NAME.openai.azure.com/openai/v1/
-export COST_LEDGER_DB_PATH=data/cost_ledger.db
+export DELIVERY_OPS_DB_PATH=data/delivery_ops.db
 export PROJECT_NAME=<pilot-project>
 ```
 
