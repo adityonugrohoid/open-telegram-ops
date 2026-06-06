@@ -1,0 +1,8 @@
+[
+  {"name": "Fuel and transport", "allocated_amount": 15000000},
+  {"name": "Tower materials", "allocated_amount": 80000000},
+  {"name": "Subcontractor labor", "allocated_amount": 45000000},
+  {"name": "Permits and site access", "allocated_amount": 8000000},
+  {"name": "Tools and safety gear", "allocated_amount": 6000000},
+  {"name": "Accommodation and meals", "allocated_amount": 12000000}
+]

@@ -8,3 +8,7 @@ openai              # Azure OpenAI via its OpenAI-compatible v1 endpoint (vision
 aiosqlite           # async SQLite for the cost ledger
 matplotlib          # budget-vs-actual chart rendering (PNG)
 python-dotenv       # load .env in local dev and the OCR harness
+
+# Tests (python -m pytest tests/)
+pytest              # test runner
+pytest-asyncio      # async test support for the aiosqlite ledger

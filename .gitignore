@@ -22,6 +22,9 @@ data/*
 scripts/ocr_test/receipts/
 scripts/ocr_test/ground_truth.json
 
+# Client chart of accounts (real budget allocations); seed from the .sample
+scripts/budget_lines.json
+
 # OpenClaw self-hosted state (never commit a client's transcripts/memory)
 openclaw/state/
 openclaw/.openclaw/
