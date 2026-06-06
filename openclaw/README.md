@@ -3,10 +3,10 @@
 OpenClaw is the agent runtime: Telegram channel, conversation memory, and the LLM
 loop. It is installed and pinned separately from this repo (we do not vendor it).
 This directory holds the config sample and the runbooks for wiring it to our
-cost-ledger MCP server.
+delivery-ops MCP server.
 
 - [INSTALL.md](INSTALL.md) - local / demo install (OpenClaw + stdio MCP on one host).
-- [DEPLOYMENT.md](DEPLOYMENT.md) - 24/7 deployment (Docker, cost-ledger as an HTTP sidecar).
+- [DEPLOYMENT.md](DEPLOYMENT.md) - 24/7 deployment (Docker, delivery-ops as an HTTP sidecar).
 - [openclaw.sample.json](openclaw.sample.json) - config to copy into the state dir.
 
 ## Why OpenClaw, and the guardrails
@@ -30,13 +30,13 @@ for a client deployment:
 
 ## MCP wiring (two modes)
 
-- **Local / demo:** stdio. OpenClaw spawns `python -m cost_ledger_mcp.server` as a
+- **Local / demo:** stdio. OpenClaw spawns `python -m delivery_ops_mcp.server` as a
   subprocess on the same host.
-- **Production:** streamable-http. The cost-ledger runs as its own sidecar
-  container; OpenClaw connects to `http://cost-ledger-mcp:8000/mcp`. The gateway
+- **Production:** streamable-http. The delivery-ops runs as its own sidecar
+  container; OpenClaw connects to `http://delivery-ops-mcp:8000/mcp`. The gateway
   stays on the stock pinned image. See DEPLOYMENT.md for why.
 
-Restrict the agent to the three cost-ledger tools (`log_expense`, `query_spend`,
+Restrict the agent to the three delivery-ops tools (`log_expense`, `query_spend`,
 `budget_status`) plus the built-ins it needs. Do not expose `exec`/`browser` to a
 cost-entry agent.
 

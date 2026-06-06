@@ -1,4 +1,4 @@
-# Python deps for the cost-ledger MCP server and the OCR test harness.
+# Python deps for the delivery-ops MCP server and the OCR test harness.
 # Unpinned per repo convention; pin only if a compatibility issue forces it.
 # Telegram + the agent loop are handled by OpenClaw (Node/grammY), not here.
 

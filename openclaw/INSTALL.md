@@ -1,6 +1,6 @@
 # OpenClaw install (local / demo)
 
-This is the fast path for the demo: OpenClaw on your laptop, the cost-ledger MCP
+This is the fast path for the demo: OpenClaw on your laptop, the delivery-ops MCP
 server running on the same host over stdio. For the always-on deployment, see
 [DEPLOYMENT.md](DEPLOYMENT.md).
 
@@ -36,7 +36,7 @@ openclaw onboard                        # interactive onboarding
 service. For a laptop demo you can skip the daemon and run the gateway in the
 foreground.)
 
-## 3. Install the cost-ledger MCP server deps
+## 3. Install the delivery-ops MCP server deps
 
 From the repo root:
 
@@ -48,7 +48,7 @@ pip install -r requirements.txt
 Confirm it runs over stdio:
 
 ```bash
-COST_LEDGER_DB_PATH=data/cost_ledger.db PROJECT_NAME=demo python -m cost_ledger_mcp.server
+COST_LEDGER_DB_PATH=data/cost_ledger.db PROJECT_NAME=demo python -m delivery_ops_mcp.server
 ```
 
 (It will wait on stdio; Ctrl-C to stop. OpenClaw will launch it the same way.)
@@ -63,7 +63,7 @@ cp openclaw/openclaw.sample.json ~/.openclaw/openclaw.json
 ```
 
 Edit `~/.openclaw/openclaw.json`: comment out the `url`/`streamable-http` block and
-uncomment the `command`/`stdio` block (it points at `python -m cost_ledger_mcp.server`).
+uncomment the `command`/`stdio` block (it points at `python -m delivery_ops_mcp.server`).
 Set `cwd` to the repo path and make sure the venv's `python` is on PATH, or use the
 venv's absolute python in `command`. Keep the `azure-oai` provider block,
 `dreaming.enabled: false`, and the pinned `update` block as-is.
@@ -87,7 +87,7 @@ curl -fsS http://127.0.0.1:18789/healthz && echo OK
 ```
 
 Message your bot on Telegram. The agent should answer and have the three
-cost-ledger tools available.
+delivery-ops tools available.
 
 ## Before the demo
 

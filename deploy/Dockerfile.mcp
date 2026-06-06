@@ -1,5 +1,5 @@
 # Cost-ledger MCP server, built as a standalone sidecar that serves the
-# cost-ledger tools over streamable-http. Kept separate from the OpenClaw gateway image so
+# delivery-ops tools over streamable-http. Kept separate from the OpenClaw gateway image so
 # each upgrades independently (the gateway stays on the stock pinned image).
 # See openclaw/DEPLOYMENT.md.
 
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY cost_ledger_mcp ./cost_ledger_mcp
+COPY delivery_ops_mcp ./delivery_ops_mcp
 # Bundle only the budget seed script (not the OCR test harness) so the documented
 # `python -m scripts.seed_budget` chart-of-accounts load works inside the sidecar.
 COPY scripts/__init__.py scripts/seed_budget.py ./scripts/
@@ -21,4 +21,4 @@ ENV MCP_TRANSPORT=streamable-http \
 
 EXPOSE 8000
 
-CMD ["python", "-m", "cost_ledger_mcp.server"]
+CMD ["python", "-m", "delivery_ops_mcp.server"]

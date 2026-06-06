@@ -76,7 +76,7 @@ graph TD
     LLM -->|parsed expense| OC
     OC -->|confirm parse + budget line| W
 
-    OC -->|"MCP (stdio demo / http prod)"| MCP["cost_ledger_mcp<br/><i>set_budget / log_expense<br/>query_spend / budget_status / budget_chart</i>"]
+    OC -->|"MCP (stdio demo / http prod)"| MCP["delivery_ops_mcp<br/><i>set_budget / log_expense<br/>query_spend / budget_status / budget_chart</i>"]
     MCP --> DB[("SQLite<br/>expenses + budget_lines")]
     MCP --> CHART["reports.py<br/><i>matplotlib PNG</i>"]
     CHART -->|chart image| OC
@@ -130,8 +130,8 @@ Edit `.env`. Set the Azure OpenAI key and base URL (`AZURE_OPENAI_API_KEY`, `AZU
 ## Usage
 
 ```bash
-# Run the cost-ledger MCP server over stdio (OpenClaw launches it this way)
-python -m cost_ledger_mcp.server
+# Run the delivery-ops MCP server over stdio (OpenClaw launches it this way)
+python -m delivery_ops_mcp.server
 
 # Run the mandatory OCR accuracy test before building bot flows
 python scripts/ocr_test/run_ocr_test.py
@@ -148,7 +148,7 @@ The agent flow, end to end:
 
 ### MCP tool contract
 
-The runtime calls these tools on the cost-ledger MCP server:
+The runtime calls these tools on the delivery-ops MCP server:
 
 | Tool | Purpose |
 |------|---------|
@@ -166,7 +166,7 @@ OCR on field receipts is never perfect. The agent always echoes the parsed amoun
 
 ```
 open-telegram-ops/
-├── cost_ledger_mcp/
+├── delivery_ops_mcp/
 │   ├── server.py        # MCP server (stdio or streamable-http), 3 tools
 │   ├── ledger.py        # SQLite schema + async read/write
 │   └── reports.py       # text summary + matplotlib chart rendering
@@ -176,8 +176,8 @@ open-telegram-ops/
 │   ├── DEPLOYMENT.md    # 24/7 Docker deployment (sidecar topology)
 │   └── openclaw.sample.json
 ├── deploy/
-│   └── Dockerfile.mcp   # cost-ledger MCP sidecar image
-├── docker-compose.yml   # gateway (stock image) + cost-ledger-mcp sidecar
+│   └── Dockerfile.mcp   # delivery-ops MCP sidecar image
+├── docker-compose.yml   # gateway (stock image) + delivery-ops-mcp sidecar
 ├── scripts/ocr_test/
 │   ├── run_ocr_test.py  # OCR accuracy harness
 │   └── README.md        # 10-receipt test protocol + thresholds
@@ -198,8 +198,8 @@ Full steps in [`openclaw/INSTALL.md`](openclaw/INSTALL.md).
 ### 24/7
 
 Docker Compose: the OpenClaw gateway runs from the stock pinned image, and the
-cost-ledger MCP server runs as a sidecar container over streamable-http. The
-gateway reaches it at `http://cost-ledger-mcp:8000/mcp`.
+delivery-ops MCP server runs as a sidecar container over streamable-http. The
+gateway reaches it at `http://delivery-ops-mcp:8000/mcp`.
 
 ```bash
 cp .env.example .env          # fill token, project, LLM path

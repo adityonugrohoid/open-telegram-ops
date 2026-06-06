@@ -6,7 +6,7 @@ import stat
 
 import pytest
 
-from cost_ledger_mcp import reports
+from delivery_ops_mcp import reports
 
 PNG_MAGIC = b"\x89PNG\r\n\x1a\n"
 
