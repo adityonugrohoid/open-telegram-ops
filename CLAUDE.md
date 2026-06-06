@@ -1,6 +1,6 @@
 # open-telegram-ops
 
-Conversational job-costing for a telecom subcontractor: a field worker snaps a receipt photo in Telegram, an agent reads it, attributes it to a budget line, logs it to a cost ledger, and managers get live budget-vs-actual visibility with a per-submitter accountability trail.
+Conversational job-costing for a telecom subcontractor: a field worker snaps a receipt photo in Telegram, an agent reads it, attributes it to a budget line, logs it to a delivery-ops ledger, and managers get live budget-vs-actual visibility with a per-submitter accountability trail.
 
 This is the first of several planned internal agents for one client. Demo first, with a path to a real running tool.
 
@@ -8,7 +8,7 @@ This is the first of several planned internal agents for one client. Demo first,
 
 This repo owns two things:
 
-- `delivery_ops_mcp/` - a custom MCP server that is the durable, swappable domain layer: the SQLite cost ledger, attribution, and reporting. This is the asset. The client's financial data lives here, in our controlled store, never inside OpenClaw's plaintext transcripts. It serves over two transports (one env var, `MCP_TRANSPORT`): stdio for the local demo, streamable-http for the 24/7 sidecar.
+- `delivery_ops_mcp/` - a custom MCP server that is the durable, swappable domain layer: the SQLite delivery-ops ledger, attribution, and reporting. This is the asset. The client's financial data lives here, in our controlled store, never inside OpenClaw's plaintext transcripts. It serves over two transports (one env var, `MCP_TRANSPORT`): stdio for the local demo, streamable-http for the 24/7 sidecar.
 - `openclaw/` - config sample and runbooks for the OpenClaw runtime that provides Telegram, conversation memory, and the agent loop. OpenClaw is installed and pinned separately (see `openclaw/INSTALL.md` and `openclaw/DEPLOYMENT.md`); we do not vendor it.
 
 Decoupling is deliberate: if OpenClaw proves too unstable, the runtime is swappable without touching the ledger or the MCP contract.

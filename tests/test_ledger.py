@@ -1,4 +1,4 @@
-"""Tests for the SQLite cost ledger: schema, budget lines, writes, reads, validation.
+"""Tests for the SQLite delivery-ops ledger: schema, budget lines, writes, reads, validation.
 
 The ledger is the durable asset, so this suite pins its behaviour: amounts are
 positive rupiah, every expense maps to a defined budget line (no silent vanish),

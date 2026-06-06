@@ -1,4 +1,4 @@
-"""MCP server exposing the cost ledger to the OpenClaw runtime.
+"""MCP server exposing the delivery-ops ledger to the OpenClaw runtime.
 
 Registers six tools: set_budget, log_expense, query_spend, budget_status,
 budget_chart, export_ledger.
@@ -26,7 +26,7 @@ from delivery_ops_mcp import ledger, reports
 
 load_dotenv()
 
-DB_PATH = os.environ["COST_LEDGER_DB_PATH"]
+DB_PATH = os.environ["DELIVERY_OPS_DB_PATH"]
 PROJECT = os.environ["PROJECT_NAME"]
 
 TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")

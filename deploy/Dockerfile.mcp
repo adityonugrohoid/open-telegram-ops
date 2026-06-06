@@ -1,4 +1,4 @@
-# Cost-ledger MCP server, built as a standalone sidecar that serves the
+# Delivery-ops MCP server, built as a standalone sidecar that serves the
 # delivery-ops tools over streamable-http. Kept separate from the OpenClaw gateway image so
 # each upgrades independently (the gateway stays on the stock pinned image).
 # See openclaw/DEPLOYMENT.md.

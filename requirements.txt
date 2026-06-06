@@ -5,7 +5,7 @@
 mcp                 # Model Context Protocol Python SDK (stdio + streamable-http)
 uvicorn             # ASGI server backing the streamable-http transport (sidecar mode)
 openai              # Azure OpenAI via its OpenAI-compatible v1 endpoint (vision input)
-aiosqlite           # async SQLite for the cost ledger
+aiosqlite           # async SQLite for the delivery-ops ledger
 matplotlib          # budget-vs-actual chart rendering (PNG)
 python-dotenv       # load .env in local dev and the OCR harness
 
