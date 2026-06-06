@@ -68,6 +68,19 @@ async def log_expense(
 
 
 @mcp.tool()
+async def set_budget(name: str, allocated_amount: int) -> dict[str, object]:
+    """Create or update a budget line allocation (integer rupiah) for the active
+    project. A manager action: define the chart of accounts before expenses are
+    logged against it. Idempotent on the line name, so re-calling adjusts the
+    allocation in place.
+    """
+    await ledger.upsert_budget_line(
+        DB_PATH, project=PROJECT, name=name, allocated_amount=allocated_amount
+    )
+    return {"budget_line": name, "allocated_amount": allocated_amount, "status": "set"}
+
+
+@mcp.tool()
 async def query_spend(since: str, until: str) -> dict[str, object]:
     """Return spend for [since, until] (inclusive ISO dates), by budget line and
     by submitter, plus the total, for the active project.

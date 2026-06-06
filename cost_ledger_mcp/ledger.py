@@ -43,6 +43,37 @@ async def init_db(db_path: str) -> None:
         await db.commit()
 
 
+async def upsert_budget_line(
+    db_path: str,
+    *,
+    project: str,
+    name: str,
+    allocated_amount: int,
+) -> None:
+    """Create a budget line or update its allocation, for one project.
+
+    Idempotent on (project, name): re-running with a new allocated_amount updates
+    the allocation in place rather than inserting a duplicate. This is the only
+    write path for budget allocations; budget lines must exist before expenses can
+    be logged against them (see log_expense).
+    """
+    if allocated_amount < 0:
+        raise ValueError(
+            f"allocated_amount must be non-negative rupiah, got {allocated_amount!r}"
+        )
+    async with aiosqlite.connect(db_path) as db:
+        await db.execute(
+            """
+            INSERT INTO budget_lines (project, name, allocated_amount)
+            VALUES (?, ?, ?)
+            ON CONFLICT (project, name)
+                DO UPDATE SET allocated_amount = excluded.allocated_amount
+            """,
+            (project, name, allocated_amount),
+        )
+        await db.commit()
+
+
 async def log_expense(
     db_path: str,
     *,
@@ -62,10 +93,23 @@ async def log_expense(
     The caller (agent) must have confirmed the parsed values with the submitter
     before calling this. created_at is passed in, not generated here, to keep
     this layer free of ambient clock state.
+
+    budget_line must be a line already defined for the project (via
+    upsert_budget_line / the seed script). Logging against an undefined line is
+    rejected, so an expense can never silently fall out of budget_status.
     """
     if amount <= 0:
         raise ValueError(f"amount must be positive rupiah, got {amount!r}")
     async with aiosqlite.connect(db_path) as db:
+        known_line = await (await db.execute(
+            "SELECT 1 FROM budget_lines WHERE project = ? AND name = ?",
+            (project, budget_line),
+        )).fetchone()
+        if known_line is None:
+            raise ValueError(
+                f"budget_line {budget_line!r} is not a defined line for project "
+                f"{project!r}; define it with set_budget or the seed script first"
+            )
         cursor = await db.execute(
             """
             INSERT INTO expenses (
