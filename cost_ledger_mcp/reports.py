@@ -8,6 +8,7 @@ upstream issue #89641).
 
 from __future__ import annotations
 
+import csv
 import io
 import re
 from pathlib import Path
@@ -16,6 +17,13 @@ from pathlib import Path
 COLOR_ALLOCATED = "#0f3460"
 COLOR_SPENT = "#533483"
 COLOR_OVER = "#c1121f"
+
+# Fixed column order for the ledger CSV export, so the file is stable for audit
+# regardless of which fields a given row populates. Matches ledger.fetch_expenses.
+EXPENSE_CSV_COLUMNS = [
+    "id", "project", "telegram_user_id", "username", "amount", "vendor",
+    "expense_date", "category", "budget_line", "raw_ocr", "created_at",
+]
 
 
 def format_rupiah(amount: int) -> str:
@@ -85,5 +93,29 @@ def write_chart_png(png: bytes, output_dir: str, project: str) -> Path:
     slug = re.sub(r"[^a-z0-9]+", "-", project.lower()).strip("-") or "project"
     path = directory / f"budget-{slug}.png"
     path.write_bytes(png)
+    path.chmod(0o644)
+    return path
+
+
+def write_ledger_csv(rows: list[dict[str, object]], output_dir: str, project: str) -> Path:
+    """Write expense rows to a CSV file under output_dir and return the path.
+
+    Columns are fixed (EXPENSE_CSV_COLUMNS), so the export header is stable for
+    audit regardless of row content; an empty input writes a header-only file. The
+    file is named per project (stable, so it is overwritten each export) and made
+    world-readable: the cost-ledger sidecar writes it as root, but the OpenClaw
+    gateway reads it as a non-root user to send it as a Telegram document, so both
+    containers must share output_dir as a volume.
+    """
+    directory = Path(output_dir)
+    directory.mkdir(parents=True, exist_ok=True)
+    slug = re.sub(r"[^a-z0-9]+", "-", project.lower()).strip("-") or "project"
+    path = directory / f"ledger-{slug}.csv"
+
+    buf = io.StringIO()
+    writer = csv.DictWriter(buf, fieldnames=EXPENSE_CSV_COLUMNS)
+    writer.writeheader()
+    writer.writerows(rows)
+    path.write_text(buf.getvalue(), encoding="utf-8")
     path.chmod(0o644)
     return path

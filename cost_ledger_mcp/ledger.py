@@ -189,6 +189,48 @@ async def query_spend(
     }
 
 
+async def fetch_expenses(
+    db_path: str,
+    *,
+    project: str,
+    since: str | None = None,
+    until: str | None = None,
+) -> list[dict[str, object]]:
+    """Return raw expense rows for one project, ordered by id ascending.
+
+    This is the row-level read behind the CSV export. Unlike query_spend, which
+    aggregates, it returns every column of every matching row (amount, vendor,
+    date, category, budget line, submitter id, raw OCR, created_at), for audit.
+
+    The optional since/until bound expense_date inclusively (ISO YYYY-MM-DD). With
+    both omitted, every row for the project is returned.
+    """
+    conditions = ["project = ?"]
+    params: list[object] = [project]
+    if since is not None:
+        conditions.append("expense_date >= ?")
+        params.append(since)
+    if until is not None:
+        conditions.append("expense_date <= ?")
+        params.append(until)
+    where = " AND ".join(conditions)
+
+    async with aiosqlite.connect(db_path) as db:
+        db.row_factory = aiosqlite.Row
+        rows = await (await db.execute(
+            f"""
+            SELECT
+                id, project, telegram_user_id, username, amount, vendor,
+                expense_date, category, budget_line, raw_ocr, created_at
+            FROM expenses
+            WHERE {where}
+            ORDER BY id ASC
+            """,
+            params,
+        )).fetchall()
+    return [dict(r) for r in rows]
+
+
 async def budget_status(
     db_path: str,
     *,

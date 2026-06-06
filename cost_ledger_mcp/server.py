@@ -1,6 +1,7 @@
 """MCP server exposing the cost ledger to the OpenClaw runtime.
 
-Registers three tools: log_expense, query_spend, budget_status.
+Registers six tools: set_budget, log_expense, query_spend, budget_status,
+budget_chart, export_ledger.
 
 Two transports, selected by MCP_TRANSPORT:
   - "stdio" (default): OpenClaw spawns this as a subprocess. Used for the local
@@ -37,6 +38,11 @@ HTTP_PORT = int(os.environ.get("MCP_HTTP_PORT", "8000"))
 # outbound local media from its media/workspace/canvas/sandbox roots. See
 # docker-compose.yml.
 CHART_DIR = os.environ.get("CHART_OUTPUT_DIR", "data/charts")
+
+# Where export_ledger writes CSVs. Same rationale as CHART_DIR: in the 24/7 deploy
+# this points at an OpenClaw media root shared with the gateway, so the gateway can
+# send the file as a Telegram document.
+EXPORT_DIR = os.environ.get("EXPORT_OUTPUT_DIR", "data/exports")
 
 mcp = FastMCP("cost-ledger", host=HTTP_HOST, port=HTTP_PORT)
 
@@ -131,6 +137,25 @@ async def budget_chart() -> dict[str, object]:
     png = reports.render_budget_chart(status, title=f"Budget vs actual - {PROJECT}")
     path = reports.write_chart_png(png, CHART_DIR, PROJECT)
     return {"chart_path": str(path), "budget_lines": len(status), "status": "rendered"}
+
+
+@mcp.tool()
+async def export_ledger(
+    since: str | None = None,
+    until: str | None = None,
+) -> dict[str, object]:
+    """Export the active project's raw expense rows to a CSV file and return its
+    path under `csv_path`. Every column of every row is included (amount, vendor,
+    date, category, budget line, submitter id, raw OCR, created_at), for audit.
+
+    A manager/owner action: the file contains every submitter's data. Optional
+    since/until bound expense_date inclusively (ISO YYYY-MM-DD); omit both for the
+    full ledger. To deliver it, the caller SENDS that file as a document via the
+    channel's message tool; the returned path is not the file content.
+    """
+    rows = await ledger.fetch_expenses(DB_PATH, project=PROJECT, since=since, until=until)
+    path = reports.write_ledger_csv(rows, EXPORT_DIR, PROJECT)
+    return {"csv_path": str(path), "row_count": len(rows), "status": "exported"}
 
 
 def main() -> None:
