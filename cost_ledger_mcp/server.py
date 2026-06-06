@@ -32,8 +32,10 @@ TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
 HTTP_HOST = os.environ.get("MCP_HTTP_HOST", "0.0.0.0")
 HTTP_PORT = int(os.environ.get("MCP_HTTP_PORT", "8000"))
 
-# Where budget_chart writes PNGs. In the 24/7 deploy this is a volume shared with
-# the gateway so it can send the file as a Telegram photo (see docker-compose.yml).
+# Where budget_chart writes PNGs. In the 24/7 deploy this points at an OpenClaw
+# media root (stateDir/media) shared with the gateway, because OpenClaw only sends
+# outbound local media from its media/workspace/canvas/sandbox roots. See
+# docker-compose.yml.
 CHART_DIR = os.environ.get("CHART_OUTPUT_DIR", "data/charts")
 
 mcp = FastMCP("cost-ledger", host=HTTP_HOST, port=HTTP_PORT)
