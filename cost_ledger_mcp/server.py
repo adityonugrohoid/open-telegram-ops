@@ -19,9 +19,9 @@ import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP
+from mcp.server.fastmcp import FastMCP, Image
 
-from cost_ledger_mcp import ledger
+from cost_ledger_mcp import ledger, reports
 
 load_dotenv()
 
@@ -92,6 +92,17 @@ async def query_spend(since: str, until: str) -> dict[str, object]:
 async def budget_status() -> list[dict[str, object]]:
     """Return budget-vs-actual per budget line for the active project."""
     return await ledger.budget_status(DB_PATH, project=PROJECT)
+
+
+@mcp.tool()
+async def budget_chart() -> Image:
+    """Render the current budget-vs-actual chart for the active project as a PNG,
+    for a manager to view in chat. Over-budget lines show a red 'spent' bar.
+    Raises if no budget lines are defined yet.
+    """
+    status = await ledger.budget_status(DB_PATH, project=PROJECT)
+    png = reports.render_budget_chart(status, title=f"Budget vs actual - {PROJECT}")
+    return Image(data=png, format="png")
 
 
 def main() -> None:

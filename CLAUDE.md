@@ -37,7 +37,7 @@ LLM runs on **Azure OpenAI** via OpenClaw's built-in OpenAI-compatible provider 
 ```
 open-telegram-ops/
 ├── cost_ledger_mcp/
-│   ├── server.py        # entry point: MCP server (stdio or streamable-http), 3 tools
+│   ├── server.py        # entry point: MCP server (stdio or streamable-http), 5 tools
 │   ├── ledger.py        # SQLite schema + async read/write
 │   └── reports.py       # text summary + matplotlib chart rendering
 ├── openclaw/
@@ -56,7 +56,7 @@ open-telegram-ops/
 └── tests/
 ```
 
-The three MCP tools (the contract OpenClaw calls): `log_expense`, `query_spend`, `budget_status`.
+The MCP tools (the contract OpenClaw calls): `set_budget`, `log_expense`, `query_spend`, `budget_status`, `budget_chart`.
 
 ## Dev commands
 
