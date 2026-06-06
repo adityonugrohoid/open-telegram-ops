@@ -199,3 +199,51 @@ async def test_budget_status_unknown_line_is_empty(db):
     await _seed_mixed(db)
     status = await ledger.budget_status(db, project="P", budget_line="Nope")
     assert status == []
+
+
+async def test_fetch_expenses_returns_every_column(db):
+    await ledger.upsert_budget_line(db, project="P", name="Fuel", allocated_amount=1000000)
+    await _log(db, amount=250000, budget_line="Fuel", vendor="SPBU", raw_ocr="TOTAL 250000")
+    rows = await ledger.fetch_expenses(db, project="P")
+    assert len(rows) == 1
+    row = rows[0]
+    assert set(row) == {
+        "id", "project", "telegram_user_id", "username", "amount", "vendor",
+        "expense_date", "category", "budget_line", "raw_ocr", "created_at",
+    }
+    assert row["amount"] == 250000
+    assert row["vendor"] == "SPBU"
+    assert row["raw_ocr"] == "TOTAL 250000"  # raw audit field is preserved
+
+
+async def test_fetch_expenses_orders_by_id_ascending(db):
+    await ledger.upsert_budget_line(db, project="P", name="Fuel", allocated_amount=1000000)
+    await _log(db, amount=100000, budget_line="Fuel")
+    await _log(db, amount=200000, budget_line="Fuel")
+    rows = await ledger.fetch_expenses(db, project="P")
+    assert [r["amount"] for r in rows] == [100000, 200000]
+    ids = [int(r["id"]) for r in rows]  # type: ignore[call-overload]
+    assert ids == sorted(ids)
+
+
+async def test_fetch_expenses_respects_date_range(db):
+    await ledger.upsert_budget_line(db, project="P", name="Fuel", allocated_amount=1000000)
+    await _log(db, amount=100000, expense_date="2026-05-31")
+    await _log(db, amount=200000, expense_date="2026-06-15")
+    await _log(db, amount=400000, expense_date="2026-07-01")
+    rows = await ledger.fetch_expenses(db, project="P", since="2026-06-01", until="2026-06-30")
+    assert [r["amount"] for r in rows] == [200000]
+
+
+async def test_fetch_expenses_isolates_projects(db):
+    await ledger.upsert_budget_line(db, project="P", name="Fuel", allocated_amount=1000000)
+    await ledger.upsert_budget_line(db, project="Q", name="Fuel", allocated_amount=1000000)
+    await _log(db, project="P", amount=250000)
+    await _log(db, project="Q", amount=999999)
+    rows = await ledger.fetch_expenses(db, project="P")
+    assert [r["amount"] for r in rows] == [250000]
+
+
+async def test_fetch_expenses_empty_is_empty_list(db):
+    rows = await ledger.fetch_expenses(db, project="P")
+    assert rows == []

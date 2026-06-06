@@ -50,3 +50,41 @@ def test_write_chart_png_overwrites_same_project(tmp_path):
     p1 = reports.write_chart_png(png, str(tmp_path), "Pilot")
     p2 = reports.write_chart_png(png, str(tmp_path), "Pilot")
     assert p1 == p2  # stable name, not accumulating files
+
+
+def _expense_row(**overrides):
+    row = {
+        "id": 1, "project": "Pilot", "telegram_user_id": 1, "username": "alice",
+        "amount": 250000, "vendor": "SPBU", "expense_date": "2026-06-01",
+        "category": "transport", "budget_line": "Fuel", "raw_ocr": "TOTAL 250000",
+        "created_at": "2026-06-01T00:00:00Z",
+    }
+    row.update(overrides)
+    return row
+
+
+def test_write_ledger_csv_creates_world_readable_file(tmp_path):
+    path = reports.write_ledger_csv([_expense_row()], str(tmp_path / "exports"), "Pilot Project")
+    assert path.exists()
+    assert path.name == "ledger-pilot-project.csv"  # slugified, stable name
+    assert stat.S_IMODE(path.stat().st_mode) == 0o644  # gateway (non-root) can read
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert lines[0] == (
+        "id,project,telegram_user_id,username,amount,vendor,"
+        "expense_date,category,budget_line,raw_ocr,created_at"
+    )
+    assert "SPBU" in lines[1]
+    assert "250000" in lines[1]
+
+
+def test_write_ledger_csv_empty_writes_header_only(tmp_path):
+    path = reports.write_ledger_csv([], str(tmp_path), "Pilot")
+    lines = path.read_text(encoding="utf-8").splitlines()
+    assert len(lines) == 1  # header row only, no data
+    assert lines[0].startswith("id,project,")
+
+
+def test_write_ledger_csv_overwrites_same_project(tmp_path):
+    p1 = reports.write_ledger_csv([_expense_row()], str(tmp_path), "Pilot")
+    p2 = reports.write_ledger_csv([_expense_row(id=2)], str(tmp_path), "Pilot")
+    assert p1 == p2  # stable name, not accumulating files
