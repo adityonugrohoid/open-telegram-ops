@@ -81,17 +81,36 @@ async def set_budget(name: str, allocated_amount: int) -> dict[str, object]:
 
 
 @mcp.tool()
-async def query_spend(since: str, until: str) -> dict[str, object]:
+async def query_spend(
+    since: str,
+    until: str,
+    budget_line: str | None = None,
+    category: str | None = None,
+    submitter_id: int | None = None,
+) -> dict[str, object]:
     """Return spend for [since, until] (inclusive ISO dates), by budget line and
     by submitter, plus the total, for the active project.
+
+    Optional filters narrow the result: budget_line, category, and submitter_id
+    (a Telegram user id). They compose.
     """
-    return await ledger.query_spend(DB_PATH, project=PROJECT, since=since, until=until)
+    return await ledger.query_spend(
+        DB_PATH,
+        project=PROJECT,
+        since=since,
+        until=until,
+        budget_line=budget_line,
+        category=category,
+        submitter_id=submitter_id,
+    )
 
 
 @mcp.tool()
-async def budget_status() -> list[dict[str, object]]:
-    """Return budget-vs-actual per budget line for the active project."""
-    return await ledger.budget_status(DB_PATH, project=PROJECT)
+async def budget_status(budget_line: str | None = None) -> list[dict[str, object]]:
+    """Return budget-vs-actual for the active project: every budget line, or just
+    the one named by budget_line.
+    """
+    return await ledger.budget_status(DB_PATH, project=PROJECT, budget_line=budget_line)
 
 
 @mcp.tool()
