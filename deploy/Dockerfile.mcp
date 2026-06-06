@@ -11,9 +11,10 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY delivery_ops_mcp ./delivery_ops_mcp
-# Bundle only the budget seed script (not the OCR test harness) so the documented
-# `python -m scripts.seed_budget` chart-of-accounts load works inside the sidecar.
-COPY scripts/__init__.py scripts/seed_budget.py ./scripts/
+# Bundle the seed scripts (not the OCR test harness) so the documented
+# `python -m scripts.seed_budget` chart-of-accounts load and the
+# `python -m scripts.seed_demo` demo dataset both work inside the sidecar.
+COPY scripts/__init__.py scripts/seed_budget.py scripts/seed_demo.py ./scripts/
 
 ENV MCP_TRANSPORT=streamable-http \
     MCP_HTTP_HOST=0.0.0.0 \
