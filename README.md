@@ -154,8 +154,8 @@ The runtime calls these tools on the cost-ledger MCP server:
 |------|---------|
 | `set_budget` | Create or update a budget line allocation (a manager action; defines the chart of accounts) |
 | `log_expense` | Write a confirmed expense (amount, vendor, date, category, budget line, submitter); rejects an undefined budget line |
-| `query_spend` | Return spend for a period, broken down by budget line and by submitter |
-| `budget_status` | Return budget-vs-actual per budget line for the active project |
+| `query_spend` | Return spend for a period, broken down by budget line and by submitter; optional filters by line, category, or submitter |
+| `budget_status` | Return budget-vs-actual for the active project: all budget lines, or just one |
 | `budget_chart` | Render the budget-vs-actual chart as a PNG for in-chat viewing |
 
 ### Confirm before commit

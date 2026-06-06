@@ -134,46 +134,83 @@ async def query_spend(
     project: str,
     since: str,
     until: str,
+    budget_line: str | None = None,
+    category: str | None = None,
+    submitter_id: int | None = None,
 ) -> dict[str, object]:
     """Return spend for [since, until] (inclusive ISO dates) for one project,
     broken down by budget line and by submitter, plus the total.
+
+    The optional filters narrow the result. Each that is not None adds an equality
+    condition (budget_line, category, telegram_user_id). They compose, so passing
+    submitter_id and budget_line returns one submitter's spend on one line.
     """
+    conditions = ["project = ?", "expense_date BETWEEN ? AND ?"]
+    params: list[object] = [project, since, until]
+    if budget_line is not None:
+        conditions.append("budget_line = ?")
+        params.append(budget_line)
+    if category is not None:
+        conditions.append("category = ?")
+        params.append(category)
+    if submitter_id is not None:
+        conditions.append("telegram_user_id = ?")
+        params.append(submitter_id)
+    where = " AND ".join(conditions)
+
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
         by_line = await (await db.execute(
-            """
+            f"""
             SELECT budget_line, SUM(amount) AS total
             FROM expenses
-            WHERE project = ? AND expense_date BETWEEN ? AND ?
+            WHERE {where}
             GROUP BY budget_line ORDER BY total DESC
             """,
-            (project, since, until),
+            params,
         )).fetchall()
         by_user = await (await db.execute(
-            """
+            f"""
             SELECT telegram_user_id, username, SUM(amount) AS total
             FROM expenses
-            WHERE project = ? AND expense_date BETWEEN ? AND ?
+            WHERE {where}
             GROUP BY telegram_user_id ORDER BY total DESC
             """,
-            (project, since, until),
+            params,
         )).fetchall()
     return {
         "project": project,
         "since": since,
         "until": until,
+        "filters": {"budget_line": budget_line, "category": category, "submitter_id": submitter_id},
         "by_budget_line": [dict(r) for r in by_line],
         "by_submitter": [dict(r) for r in by_user],
         "total": sum(r["total"] for r in by_line),
     }
 
 
-async def budget_status(db_path: str, *, project: str) -> list[dict[str, object]]:
-    """Return budget-vs-actual per budget line for the active project."""
+async def budget_status(
+    db_path: str,
+    *,
+    project: str,
+    budget_line: str | None = None,
+) -> list[dict[str, object]]:
+    """Return budget-vs-actual per budget line for the project.
+
+    With budget_line set, returns just that one line (an empty list if no such
+    line is defined); otherwise every line for the project.
+    """
+    conditions = ["bl.project = ?"]
+    params: list[object] = [project]
+    if budget_line is not None:
+        conditions.append("bl.name = ?")
+        params.append(budget_line)
+    where = " AND ".join(conditions)
+
     async with aiosqlite.connect(db_path) as db:
         db.row_factory = aiosqlite.Row
         rows = await (await db.execute(
-            """
+            f"""
             SELECT
                 bl.name AS budget_line,
                 bl.allocated_amount AS allocated,
@@ -181,10 +218,10 @@ async def budget_status(db_path: str, *, project: str) -> list[dict[str, object]
             FROM budget_lines bl
             LEFT JOIN expenses e
                 ON e.project = bl.project AND e.budget_line = bl.name
-            WHERE bl.project = ?
+            WHERE {where}
             GROUP BY bl.id ORDER BY bl.name
             """,
-            (project,),
+            params,
         )).fetchall()
     result: list[dict[str, object]] = []
     for r in rows:

@@ -150,3 +150,52 @@ async def test_query_spend_and_budget_status_agree(db):
     qs = await ledger.query_spend(db, project="P", since="2026-06-01", until="2026-06-30")
     status = await ledger.budget_status(db, project="P")
     assert qs["total"] == sum(s["spent"] for s in cast("list[dict[str, Any]]", status))
+
+
+async def _seed_mixed(db):
+    await ledger.upsert_budget_line(db, project="P", name="Fuel", allocated_amount=1000000)
+    await ledger.upsert_budget_line(db, project="P", name="Tools", allocated_amount=500000)
+    await _log(db, amount=250000, budget_line="Fuel", category="transport", telegram_user_id=1, username="alice")
+    await _log(db, amount=50000, budget_line="Fuel", category="transport", telegram_user_id=2, username="bob")
+    await _log(db, amount=100000, budget_line="Tools", category="equipment", telegram_user_id=1, username="alice")
+
+
+async def test_query_spend_filter_by_budget_line(db):
+    await _seed_mixed(db)
+    qs = await ledger.query_spend(db, project="P", since="2026-06-01", until="2026-06-30", budget_line="Fuel")
+    assert qs["total"] == 300000
+    assert {r["budget_line"] for r in cast("list[dict[str, Any]]", qs["by_budget_line"])} == {"Fuel"}
+
+
+async def test_query_spend_filter_by_submitter(db):
+    await _seed_mixed(db)
+    qs = await ledger.query_spend(db, project="P", since="2026-06-01", until="2026-06-30", submitter_id=1)
+    assert qs["total"] == 350000  # alice: 250000 Fuel + 100000 Tools
+
+
+async def test_query_spend_filter_by_category(db):
+    await _seed_mixed(db)
+    qs = await ledger.query_spend(db, project="P", since="2026-06-01", until="2026-06-30", category="equipment")
+    assert qs["total"] == 100000
+
+
+async def test_query_spend_filters_compose(db):
+    await _seed_mixed(db)
+    qs = await ledger.query_spend(
+        db, project="P", since="2026-06-01", until="2026-06-30", budget_line="Fuel", submitter_id=2
+    )
+    assert qs["total"] == 50000  # bob on Fuel only
+
+
+async def test_budget_status_single_line(db):
+    await _seed_mixed(db)
+    status = await ledger.budget_status(db, project="P", budget_line="Tools")
+    assert len(status) == 1
+    assert status[0]["budget_line"] == "Tools"
+    assert status[0]["spent"] == 100000
+
+
+async def test_budget_status_unknown_line_is_empty(db):
+    await _seed_mixed(db)
+    status = await ledger.budget_status(db, project="P", budget_line="Nope")
+    assert status == []
