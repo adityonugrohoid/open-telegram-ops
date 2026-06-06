@@ -26,6 +26,9 @@ services:
       # `compose up` (the source files must exist or Docker creates empty dirs).
       - ./deploy/bin/jq:/usr/local/bin/jq:ro
       - ./deploy/bin/rg:/usr/local/bin/rg:ro
+      # Charts the cost-ledger sidecar renders (budget_chart). Read-only here so
+      # the gateway can send the PNG as a Telegram photo; the sidecar writes them.
+      - ./state/charts:/charts:ro
     ports:
       # Loopback only. Reach the gateway via Tailscale or an SSH tunnel; never
       # expose 18789 to the public internet.
@@ -54,8 +57,12 @@ services:
       MCP_HTTP_PORT: "8000"
       COST_LEDGER_DB_PATH: /data/cost_ledger.db
       PROJECT_NAME: "${PROJECT_NAME:?set in .env}"
+      # budget_chart writes PNGs here; shared read-only with the gateway so it can
+      # send them to Telegram as photos.
+      CHART_OUTPUT_DIR: /charts
     volumes:
       - ./state/ledger:/data
+      - ./state/charts:/charts
     networks: [opsnet]
 
 networks:

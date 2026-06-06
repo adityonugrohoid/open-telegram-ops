@@ -9,6 +9,8 @@ upstream issue #89641).
 from __future__ import annotations
 
 import io
+import re
+from pathlib import Path
 
 # House palette (matches the README architecture diagram).
 COLOR_ALLOCATED = "#0f3460"
@@ -68,3 +70,20 @@ def render_budget_chart(status: list[dict[str, object]], *, title: str | None = 
     fig.savefig(buf, format="png", dpi=120)
     plt.close(fig)
     return buf.getvalue()
+
+
+def write_chart_png(png: bytes, output_dir: str, project: str) -> Path:
+    """Write chart PNG bytes to output_dir and return the path.
+
+    The file is named per project (stable, so it is overwritten each render) and
+    made world-readable: the cost-ledger sidecar writes it as root, but the
+    OpenClaw gateway reads it as a non-root user to send it as a Telegram photo,
+    so both containers must share output_dir as a volume.
+    """
+    directory = Path(output_dir)
+    directory.mkdir(parents=True, exist_ok=True)
+    slug = re.sub(r"[^a-z0-9]+", "-", project.lower()).strip("-") or "project"
+    path = directory / f"budget-{slug}.png"
+    path.write_bytes(png)
+    path.chmod(0o644)
+    return path

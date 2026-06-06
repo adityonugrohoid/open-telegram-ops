@@ -19,7 +19,7 @@ import os
 from datetime import datetime, timezone
 
 from dotenv import load_dotenv
-from mcp.server.fastmcp import FastMCP, Image
+from mcp.server.fastmcp import FastMCP
 
 from cost_ledger_mcp import ledger, reports
 
@@ -31,6 +31,10 @@ PROJECT = os.environ["PROJECT_NAME"]
 TRANSPORT = os.environ.get("MCP_TRANSPORT", "stdio")
 HTTP_HOST = os.environ.get("MCP_HTTP_HOST", "0.0.0.0")
 HTTP_PORT = int(os.environ.get("MCP_HTTP_PORT", "8000"))
+
+# Where budget_chart writes PNGs. In the 24/7 deploy this is a volume shared with
+# the gateway so it can send the file as a Telegram photo (see docker-compose.yml).
+CHART_DIR = os.environ.get("CHART_OUTPUT_DIR", "data/charts")
 
 mcp = FastMCP("cost-ledger", host=HTTP_HOST, port=HTTP_PORT)
 
@@ -114,14 +118,17 @@ async def budget_status(budget_line: str | None = None) -> list[dict[str, object
 
 
 @mcp.tool()
-async def budget_chart() -> Image:
-    """Render the current budget-vs-actual chart for the active project as a PNG,
-    for a manager to view in chat. Over-budget lines show a red 'spent' bar.
-    Raises if no budget lines are defined yet.
+async def budget_chart() -> dict[str, object]:
+    """Render the current budget-vs-actual chart for the active project to a PNG
+    file and return its path under `chart_path`. Over-budget lines show a red
+    'spent' bar. To show the chart to a manager, the caller must SEND that file as
+    a photo via the channel's message tool; the returned path is not the image
+    itself. Raises if no budget lines are defined yet.
     """
     status = await ledger.budget_status(DB_PATH, project=PROJECT)
     png = reports.render_budget_chart(status, title=f"Budget vs actual - {PROJECT}")
-    return Image(data=png, format="png")
+    path = reports.write_chart_png(png, CHART_DIR, PROJECT)
+    return {"chart_path": str(path), "budget_lines": len(status), "status": "rendered"}
 
 
 def main() -> None:

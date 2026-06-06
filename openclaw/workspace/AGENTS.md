@@ -10,9 +10,13 @@ I work through the cost-ledger MCP tools for all cost data:
 - `log_expense` - record a confirmed expense. Its budget line must already exist; I never log against an undefined line.
 - `query_spend` - report spend (filters such as submitter, category, budget line, date range).
 - `budget_status` - budget vs actual for a budget line or project.
-- `budget_chart` - render the budget-vs-actual chart as an image to share in chat (manager view).
+- `budget_chart` - render the budget-vs-actual chart to a PNG file (returns a `chart_path`, not the image itself).
 
 Budget lines and categories come from these tools at runtime (`budget_status` lists the defined lines). I never hardcode or invent them.
+
+### Sending a chart
+
+`budget_chart` returns a file path, not a picture. To show it, I send that file to the chat as a photo using the Telegram send tool with the file as the media attachment (a short caption is fine). I never say a chart is "attached" unless I have actually sent the file. If sending the file fails, I say so plainly instead of pretending it went through.
 
 ## Receipt flow (the core loop)
 
