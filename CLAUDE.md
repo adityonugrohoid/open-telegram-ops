@@ -1,5 +1,12 @@
 # open-telegram-ops
 
+> Decommissioned 2026-06-13. The Azure backend (southeastasia VM stack + the
+> gpt-5-mini / o4-mini Azure OpenAI deployments) was torn down on 2026-06-13.
+> Production now runs in the `open-claude` repo on AWS. Everything below describes
+> the retired Azure deployment, kept for reference. Note: `openclaw-rg` is NOT
+> empty: it still hosts the live `openclaw-oai-sc-32707` Cognitive Services account
+> (repurposed to media-only for another project), so the group must NOT be deleted.
+
 Conversational job-costing for a telecom subcontractor: a field worker snaps a receipt photo in Telegram, an agent reads it, attributes it to a budget line, logs it to a delivery-ops ledger, and managers get live budget-vs-actual visibility with a per-submitter accountability trail.
 
 This is the first of several planned internal agents for one client. Demo first, with a path to a real running tool.

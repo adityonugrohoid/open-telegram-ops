@@ -1,3 +1,6 @@
+# NOTE: the Azure path here is retired (torn down 2026-06-13). Production moved to
+# the open-claude repo on AWS. Kept for reference / historical reproduction.
+#
 # 24/7 deployment: OpenClaw gateway (stock pinned image) + delivery-ops MCP sidecar.
 # The gateway connects to the sidecar by URL (http://delivery-ops-mcp:8000/mcp),
 # configured in openclaw.json. The sidecar has no published host port; it is only

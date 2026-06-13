@@ -1,5 +1,9 @@
 # gpt-5-mini fit for OpenClaw
 
+> **Historical (Azure, decommissioned 2026-06-13).** Fit analysis for the
+> `gpt-5-mini` Azure OpenAI deployment, which was deleted on 2026-06-13. Production
+> moved to the `open-claude` repo on AWS. Kept for reference, not a live integration.
+
 Does gpt-5-mini cover what the OpenClaw model lineup needs, and what must change on the
 client side. Researched 2026-06-04 against primary sources: Microsoft Learn (Azure OpenAI /
 AI Foundry) and OpenAI model docs. Azure provisioning of these deployments is done in the
