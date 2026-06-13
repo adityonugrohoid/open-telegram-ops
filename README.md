@@ -4,13 +4,20 @@
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12+-blue.svg)](https://www.python.org/downloads/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/status-active-success.svg)](#)
+[![Status](https://img.shields.io/badge/status-archived-lightgrey.svg)](#)
 
 **Snap a receipt in Telegram, get instant project cost accountability.**
 
 [Getting Started](#getting-started) | [Usage](#usage) | [Architecture](#architecture)
 
 </div>
+
+---
+
+> **Status: decommissioned (2026-06-13).** This repo was the original OpenClaw
+> deployment on Azure. The Azure backend was fully torn down on 2026-06-13.
+> Production moved to the `open-claude` repo on AWS. Docs here are an archive;
+> the `openclaw/` runbooks describe the retired Azure stack, not a live system.
 
 ---
 

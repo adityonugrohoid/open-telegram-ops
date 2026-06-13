@@ -1,5 +1,10 @@
 # Azure handoff for OpenClaw (from azure-lab, 2026-06-04)
 
+> **Historical (Azure, decommissioned 2026-06-13).** Describes the retired Azure
+> VM + Azure OpenAI deployment, torn down on 2026-06-13. Production moved to the
+> `open-claude` repo on AWS. Kept as an archive, not current run instructions.
+> See the teardown-status section at the bottom before touching `openclaw-rg`.
+
 Azure provisioning for this bot is done in the `~/projects/azure-lab` session. This file is the
 handoff: what exists, how to wire it, what must change client-side. No secrets are stored here;
 fetch keys live with the `az` commands below (the same machine's az login has access).
@@ -78,5 +83,15 @@ json_schema `response_format`; tune `reasoning_effort` per role (chat `low`, age
 - [ ] Wire the OCR path to the Foundry / `mistral-document-ai-2512` surface.
 - [ ] Deploy on the VM (`docker compose up -d --build`) and verify with a real receipt.
 
-Capability detail: `gpt-5-mini-openclaw-fit.md`. Azure teardown when done is one command in the
-azure-lab session: `az group delete -n openclaw-rg`.
+Capability detail: `gpt-5-mini-openclaw-fit.md`.
+
+## Teardown status (2026-06-13)
+
+The OpenClaw Azure resources were deleted individually on 2026-06-13: the
+`gpt-5-mini`, `o4-mini`, `gpt-4.1`, and `text-embedding-3-large` deployments, and
+the southeastasia VM stack (`openclaw-vm`, OS disk, NIC, static public IP, NSG, VNET).
+
+Do NOT run `az group delete -n openclaw-rg`. The group is NOT empty: it still hosts
+the Cognitive Services account `openclaw-oai-sc-32707` (swedencentral), repurposed to
+media-only (Sora / GPT-Image) for another project. A group delete would destroy that
+live account. Any future cleanup of leftover artifacts must be resource-by-resource.

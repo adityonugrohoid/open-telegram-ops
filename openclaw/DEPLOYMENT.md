@@ -1,5 +1,11 @@
 # OpenClaw 24/7 deployment (Azure VM + Azure OpenAI)
 
+> **Historical (Azure, decommissioned 2026-06-13).** Describes the retired Azure
+> VM + Azure OpenAI deployment, torn down on 2026-06-13. Production moved to the
+> `open-claude` repo on AWS. Kept as an archive, not current run instructions.
+> The `az group delete` mention below is superseded: see the teardown-status
+> section in `AZURE-HANDOFF.md` (`openclaw-rg` must NOT be group-deleted).
+
 Always-on deployment on a persistent Azure Linux VM, with the LLM served by Azure
 OpenAI through OpenClaw's built-in OpenAI-compatible provider. The runtime, the
 hardening, and the model all sit on one vendor and one credit (the Azure startup

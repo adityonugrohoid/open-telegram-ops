@@ -1,5 +1,9 @@
 # gpt-5-mini handoff note
 
+> **Historical (Azure, decommissioned 2026-06-13).** Wiring notes for the
+> `gpt-5-mini` Azure OpenAI deployment, which was deleted on 2026-06-13. Production
+> moved to the `open-claude` repo on AWS. Kept for reference, not a live integration.
+
 Action items for wiring OpenClaw to the `gpt-5-mini` deployment (swedencentral, GlobalStandard,
 OpenAI-compatible `openai/v1/` endpoint). Full capability analysis is in
 `gpt-5-mini-openclaw-fit.md`.

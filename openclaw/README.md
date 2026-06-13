@@ -1,5 +1,9 @@
 # OpenClaw runtime
 
+> **Historical (Azure, decommissioned 2026-06-13).** The Azure runbooks below
+> (`DEPLOYMENT.md`, `AZURE-HANDOFF.md`) describe the retired deployment, torn down
+> on 2026-06-13. Production moved to the `open-claude` repo on AWS.
+
 OpenClaw is the agent runtime: Telegram channel, conversation memory, and the LLM
 loop. It is installed and pinned separately from this repo (we do not vendor it).
 This directory holds the config sample and the runbooks for wiring it to our
